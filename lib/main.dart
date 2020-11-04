@@ -1,8 +1,9 @@
-import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'img_model.dart';
+import 'dart:io';
+import 'dart:convert';
 
 void main() {
   runApp(MyApp());
@@ -39,7 +40,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future future;
 
-  Dio dio =Dio();
+  HttpClient _httpClient = HttpClient();
 
   ImgModel imgModel;
 
@@ -60,8 +61,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
 
   Future getData() async{
-   Response<Map> response = await dio.get<Map>("https://gank.io/api/v2/data/category/Girl/type/Girl/page/$index/count/10");
-   var model = ImgModel.fromJson(response.data);
+    HttpClientRequest request = await _httpClient.getUrl(Uri.parse("https://gank.io/api/v2/data/category/Girl/type/Girl/page/$index/count/10"));
+    HttpClientResponse response = await request.close();
+    var responseBody = await response.transform(utf8.decoder).join();
+    Map<String,dynamic> map=jsonDecode(responseBody);
+    var model = ImgModel.fromJson(map);
    if(imgModel == null){
      imgModel = model;
    }else{
@@ -126,9 +130,10 @@ class LoadingDialog extends Dialog {
         child: Material(
           type: MaterialType.transparency, //透明类型
           child: Center(
-            child: SpinKitFadingCircle(
-              size: 60,
-              color: Theme.of(context).primaryColor,
+            child: CircularProgressIndicator(
+              strokeWidth: 4.0,
+              backgroundColor: Colors.blue,
+              valueColor: new AlwaysStoppedAnimation<Color>(Colors.red),
             ),
           ),
         ),
